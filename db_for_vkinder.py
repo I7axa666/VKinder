@@ -1,12 +1,23 @@
+import configparser
+import os.path
+
 import sqlalchemy as sq
 from sqlalchemy.orm import declarative_base, relationship
 import sqlalchemy
-from settings import PASSWORD
+
+
+def get_password():
+    config = configparser.ConfigParser()
+    dirname = os.path.dirname(__file__)
+    path = dirname + '/setting.ini'
+    config.read(path)
+    PASSWORD = config['PASSWORD_BD']['PASSWORD']
+    return PASSWORD
 
 
 Base = declarative_base()
 
-DSN = f'postgresql://postgres:{PASSWORD}@localhost:5432/netology_db'
+DSN = f'postgresql://postgres:{get_password()}@localhost:5432/netology_db'
 engine = sqlalchemy.create_engine(DSN)
 
 
@@ -44,7 +55,6 @@ def create_tables(engine):
 
 def drop_tables(engine):
     Base.metadata.drop_all(engine)
-
 
 
 if __name__ == '__main__':
