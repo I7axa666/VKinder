@@ -36,7 +36,6 @@ class Picture(Base):
     id = sq.Column(sq.Integer, primary_key=True)
     people_id = sq.Column(sq.Integer, sq.ForeignKey("peoples.id"), nullable=False)
     link = sq.Column(sq.Text, unique=True, nullable=False)
-
     people = relationship(People, backref="pictures")
 
 
