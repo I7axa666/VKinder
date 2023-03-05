@@ -11,8 +11,8 @@ def get_password():
     dirname = os.path.dirname(__file__)
     path = dirname + '/setting.ini'
     config.read(path)
-    PASSWORD = config['PASSWORD_BD']['PASSWORD']
-    return PASSWORD
+    password = config['PASSWORD_BD']['PASSWORD']
+    return password
 
 
 Base = declarative_base()
