@@ -6,18 +6,20 @@ from sqlalchemy.orm import declarative_base, relationship
 import sqlalchemy
 
 
-def get_password():
+def get_data():
     config = configparser.ConfigParser()
     dirname = os.path.dirname(__file__)
     path = dirname + '/setting.ini'
     config.read(path)
-    password = config['PASSWORD_BD']['PASSWORD']
-    return password
+    name_user = config['DATABASE']['USER']
+    password = config['DATABASE']['PASSWORD']
+    name_db = config['DATABASE']['NAME_DB']
+    return name_user, password, name_db
 
 
 Base = declarative_base()
 
-DSN = f'postgresql://postgres:{get_password()}@localhost:5432/netology_db'
+DSN = f'postgresql://{get_data()[0]}:{get_data()[1]}@localhost:5432/{get_data()[2]}'
 engine = sqlalchemy.create_engine(DSN)
 
 
