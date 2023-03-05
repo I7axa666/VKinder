@@ -14,7 +14,8 @@ def get_data():
     name_user = config['DATABASE']['USER']
     password = config['DATABASE']['PASSWORD']
     name_db = config['DATABASE']['NAME_DB']
-    return name_user, password, name_db
+    token_vk = config['VK_API']['TOKEN']
+    return name_user, password, name_db, token_vk
 
 
 Base = declarative_base()
