@@ -1,7 +1,8 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from db_for_vkinder import get_data
+from db_for_vkinder import get_data, add_user
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+
 
 
 class VKBot:
@@ -36,6 +37,15 @@ class VKBot:
                     f'https://vk.com/{user_id}\n'
         self.vk.method('messages.send', {'user_id': user_id, 'message': user_info, 'random_id': 0})
         self.vk.method('messages.send', {'user_id': user_id, 'attachment': "photo" + photo_id, 'random_id': 0})
+
+
+    def save_profile_info(self, user_id):
+        info = self.vk.method('users.get', {"user_ids": user_id, "fields": "bdate, sex, city, photo_id"})
+        first_name = info[0]['first_name']
+        link = f'https://vk.com/{user_id}'
+
+        add_user(first_name, link)
+
 
 
     def create_keybord(self, event, keys):
@@ -86,6 +96,8 @@ class VKBot:
 
                     else:
                         self.create_keybord(event, 'start')
+                        self.save_profile_info(event.user_id)
+
 
 
                     # elif request == "фото":

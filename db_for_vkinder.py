@@ -2,7 +2,7 @@ import configparser
 import os.path
 
 import sqlalchemy as sq
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 import sqlalchemy
 
 
@@ -60,6 +60,25 @@ def drop_tables(engine):
     Base.metadata.drop_all(engine)
 
 
+
+def add_user(name, link, engine=engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    check_user = session.query(User).filter(User.link == link)
+    if session.query(check_user.exists()).scalar() == False:
+        user = User(name=name, link=link)
+
+        session.add(user)
+        session.commit()
+
+
+    session.close()
+
+
+
+
 if __name__ == '__main__':
     create_tables(engine)
     # drop_tables(engine)
+    # add_user('Павел', 'https://vk.com/559261802')

@@ -1,5 +1,8 @@
-import requests
-from db_for_vkinder import get_data
+import vk_api
+from settings import TOKEN_VK
 
-x = get_data()[3]
-print(x)
+
+session = vk_api.VkApi(token=TOKEN_VK)
+# print(session.method('users.get', {'user_ids': 1, 'fields': 'city, verified'}))
+
+print(session.method('users.get',))
