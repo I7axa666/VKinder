@@ -6,4 +6,4 @@ settings.py
 /tests/tests/.pytest_cache
 /tests/tests/__pycache__
 /tests/tests/__init__.py
-setting.ini
+settings.ini
