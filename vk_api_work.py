@@ -5,6 +5,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
 
+
 class VKBot:
     def __init__(self):
         self.vk = vk_api.VkApi(token=get_data()[3])
@@ -40,11 +41,17 @@ class VKBot:
 
 
     def save_profile_info(self, user_id):
-        info = self.vk.method('users.get', {"user_ids": user_id, "fields": "bdate, sex, city, photo_id"})
+        info = self.vk.method('users.get', {"user_ids": user_id, "fields": "bdate, sex, city"})
         first_name = info[0]['first_name']
-        link = f'https://vk.com/{user_id}'
+        bdate = int(info[0]['bdate'].split(".")[2])
+        sex = info[0]['sex']
+        city = info[0]['city']['id']
+        link = f'https://vk.com/id{user_id}'
+        add_user(first_name, sex, city, bdate, link)
 
-        add_user(first_name, link)
+
+    # def pair_up(self):
+
 
 
 
@@ -95,8 +102,9 @@ class VKBot:
                         )
 
                     else:
-                        self.create_keybord(event, 'start')
+                        # self.create_keybord(event, 'start')
                         self.save_profile_info(event.user_id)
+                        # self.pair_up()
 
 
 

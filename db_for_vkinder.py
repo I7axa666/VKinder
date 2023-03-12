@@ -15,7 +15,8 @@ def get_data():
     password = config['DATABASE']['PASSWORD']
     name_db = config['DATABASE']['NAME_DB']
     token_vk = config['DATABASE']['TOKEN_VK']
-    return name_user, password, name_db, token_vk
+    new_token_vk = config['DATABASE']['VK_NEW_TOKEN']
+    return name_user, password, name_db, token_vk, new_token_vk
 
 
 Base = declarative_base()
@@ -29,7 +30,12 @@ class User(Base):
 
     id = sq.Column(sq.Integer, primary_key=True)
     name = sq.Column(sq.String(length=40), nullable=False)
+    city_id = sq.Column(sq.Integer, nullable=False)
+    sex = sq.Column(sq.Integer, nullable=False)
+    birth_year = sq.Column(sq.Integer, nullable=False)
     link = sq.Column(sq.Text, unique=True, nullable=False)
+    offset = sq.Column(sq.Integer, nullable=True)
+
 
 
 class Favorit(Base):
@@ -61,13 +67,13 @@ def drop_tables(engine):
 
 
 
-def add_user(name, link, engine=engine):
+def add_user(name, sex, city, bdate,  link, engine=engine):
     Session = sessionmaker(bind=engine)
     session = Session()
 
     check_user = session.query(User).filter(User.link == link)
     if session.query(check_user.exists()).scalar() == False:
-        user = User(name=name, link=link)
+        user = User(name=name, sex=sex, city_id=city, birth_year=bdate, link=link, offset=0)
 
         session.add(user)
         session.commit()
@@ -76,9 +82,27 @@ def add_user(name, link, engine=engine):
     session.close()
 
 
+def get_user_info(user_id, engine=engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    user_data = session.query(User).filter(User.link == user_id).one()
+    if user_data.sex == 1:
+        sex = 2
+    elif user_data.sex == 2:
+        sex = 1
+
+    city_id = user_data.city_id
+
+    birth_year = user_data.birth_year
+
+    session.close()
+    return sex, city_id, birth_year
+
 
 
 if __name__ == '__main__':
-    create_tables(engine)
     # drop_tables(engine)
+    # create_tables(engine)
     # add_user('Павел', 'https://vk.com/559261802')
+    get_user_info('https://vk.com/id559261802')
