@@ -107,6 +107,14 @@ def change_user_info(user_id, offset, engine=engine):
     user_data.offset = offset
     session.commit()
 
+def add_favorite(user_id, engine=engine):
+    pass
+
+def add_black_list(user_id, engine=engine):
+    pass
+
+
+
 
 
 

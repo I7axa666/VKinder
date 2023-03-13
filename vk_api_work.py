@@ -1,6 +1,6 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from db_for_vkinder import get_data, add_user, get_user_info, change_user_info
+from db_for_vkinder import get_data, add_user, get_user_info, change_user_info, add_favorite, add_black_list
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from func_for_vk import get_person_info
 
@@ -12,6 +12,7 @@ class VKBot:
         self.vk = vk_api.VkApi(token=get_data()[3])
         self.long_pool = VkLongPoll(self.vk)
         self.listen = self.long_pool.listen()
+        self.id_person = ''
 
     def write_some_msg(self, user_id, some_msg, keyboard=None):
         post = {
@@ -52,7 +53,7 @@ class VKBot:
         add_user(first_name, sex, city, bdate, link)
 
 
-    def pair_up(self, user_id):
+    def pair_up(self, user_id, keyboard):
 
         user_info = get_user_info(f'https://vk.com/id{user_id}')
         sex = user_info[0]
@@ -100,15 +101,14 @@ class VKBot:
                         'user_id': user_id,
                         'message': person_info,
                         'attachment': attachment,
-                        'random_id': 0}
+                        'random_id': 0
+                    }
                 )
                 offset += 1
                 change_user_info(f'https://vk.com/id{user_id}', offset)
-
-            
-
-
-
+                break
+        self.write_some_msg(user_id, "Добавляем в Блэк-лист или в Избранное?", keyboard)
+        self.id_person = owner_id
 
 
     def create_keybord(self, event, keys):
@@ -133,14 +133,15 @@ class VKBot:
             )
 
         elif keys == "add_favorit":
-            key_get_person = VkKeyboard()
+            key_find_person = VkKeyboard()
+            buttons = ['Блэк лист', 'Избранные']
+            button_color = [VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY]
+            for btn, btn_color in zip(buttons, button_color):
+                key_find_person.add_button(btn, btn_color)
 
-            key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
-            self.write_some_msg(
-                event.user_id,
-                "Поехали!!!",
-                key_get_person
-            )
+            self.pair_up(event.user_id, key_find_person)
+
+
 
     def run(self):
         for event in self.listen:
@@ -152,18 +153,18 @@ class VKBot:
                         self.create_keybord(event, "find_person")
 
                     elif request == "найти пару":
-                        self.pair_up(event.user_id)
+                        self.create_keybord(event, "add_favorit")
 
+                    elif request == "избранные":
+                        add_favorite(self.id_person)
 
-                        # self.write_some_msg(
-                        #     event.user_id,
-                        #     "Код еще не дописан)))"
-                        # )
+                    elif request == "блэк лист":
+                        add_black_list(self.id_person)
 
                     else:
-                        # self.create_keybord(event, 'start')
+                        self.create_keybord(event, 'start')
                         # self.save_profile_info(event.user_id)
-                        self.pair_up(event.user_id)
+                        # self.pair_up(event.user_id)
 
 
 
