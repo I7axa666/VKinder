@@ -5,8 +5,6 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from func_for_vk import get_person_info
 
 
-
-
 class VKBot:
     def __init__(self):
         self.vk = vk_api.VkApi(token=get_data()[3])
@@ -132,7 +130,7 @@ class VKBot:
                 key_get_person
             )
 
-        elif keys == "add_favorit":
+        elif keys == "add_favorite":
             key_find_person = VkKeyboard()
             buttons = ['Блэк лист', 'Избранные']
             button_color = [VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY]
@@ -153,7 +151,7 @@ class VKBot:
                         self.create_keybord(event, "find_person")
 
                     elif request == "найти пару":
-                        self.create_keybord(event, "add_favorit")
+                        self.create_keybord(event, "add_favorite")
 
                     elif request == "избранные":
                         add_favorite(self.id_person)
