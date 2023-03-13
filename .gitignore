@@ -6,5 +6,5 @@ settings.py
 /tests/tests/.pytest_cache
 /tests/tests/__pycache__
 /tests/tests/__init__.py
-settings.ini
+setting.ini
 func_for_vk.py
