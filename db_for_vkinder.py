@@ -93,11 +93,20 @@ def get_user_info(user_id, engine=engine):
         sex = 1
 
     city_id = user_data.city_id
-
+    offset = user_data.offset
     birth_year = user_data.birth_year
 
     session.close()
-    return sex, city_id, birth_year
+    return sex, city_id, birth_year, offset
+
+
+def change_user_info(user_id, offset, engine=engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    user_data = session.query(User).filter(User.link == user_id).one()
+    user_data.offset = offset
+    session.commit()
+
 
 
 
@@ -105,4 +114,5 @@ if __name__ == '__main__':
     # drop_tables(engine)
     # create_tables(engine)
     # add_user('Павел', 'https://vk.com/559261802')
-    get_user_info('https://vk.com/id559261802')
+    # print(get_user_info('https://vk.com/id559261802'))
+    change_user_info('https://vk.com/id559261802', 5)

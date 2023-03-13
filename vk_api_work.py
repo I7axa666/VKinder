@@ -1,7 +1,8 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from db_for_vkinder import get_data, add_user
+from db_for_vkinder import get_data, add_user, get_user_info, change_user_info
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+from func_for_vk import get_person_info
 
 
 
@@ -36,8 +37,9 @@ class VKBot:
         last_name = info[0]['last_name']
         user_info = f'{first_name} {last_name}\n' \
                     f'https://vk.com/{user_id}\n'
+
         self.vk.method('messages.send', {'user_id': user_id, 'message': user_info, 'random_id': 0})
-        self.vk.method('messages.send', {'user_id': user_id, 'attachment': "photo" + photo_id, 'random_id': 0})
+        # self.vk.method('messages.send', {'user_id': user_id, 'message': person_info, 'attachment': "photo353616539_405298694,photo353616539_404294376", 'random_id': 0})
 
 
     def save_profile_info(self, user_id):
@@ -50,7 +52,61 @@ class VKBot:
         add_user(first_name, sex, city, bdate, link)
 
 
-    # def pair_up(self):
+    def pair_up(self, user_id):
+
+        user_info = get_user_info(f'https://vk.com/id{user_id}')
+        sex = user_info[0]
+        city_id = user_info[1]
+        birth_year = user_info[2]
+        offset = user_info[3]
+        session = vk_api.VkApi(token=get_data()[4])
+        while True:
+            persons = session.method('users.search', {'sex': sex, 'birth_year': birth_year, 'has_photo': 1, 'city': city_id, 'offset': offset, 'count': 1, 'v': '5.131'})
+            if persons['items'][0]['is_closed'] is True:
+                offset += 1
+                change_user_info(f'https://vk.com/id{user_id}', offset)
+
+            else:
+                person_id = persons['items'][0]['id']
+                photos = session.method('photos.get',
+                                        {'owner_id': person_id, 'album_id': 'profile', 'extended': 1,
+                                         'v': '5.131'})
+                photos_dict = {}
+                owner_id = photos['items'][0]['owner_id']
+                for photo in photos['items']:
+
+                    photos_dict[photo['id']] = photo['likes']['count']
+
+                photos_list = dict(sorted(photos_dict.items(), key=lambda item: item[1]))
+
+                if len(photos_list) > 3:
+                    count_photo = 3
+                else:
+                    count_photo = len(photos_list)
+
+                attachment = ''
+
+                for photo in range(count_photo):
+                    attachment += f'photo{owner_id}_{photos_list.popitem()[0]},'
+
+                attachment = attachment[:-1]
+
+
+                person_info = f"{persons['items'][0]['first_name']} {persons['items'][0]['last_name']}\nhttps://vk.com/id{owner_id}"
+
+                self.vk.method(
+                    'messages.send',
+                    {
+                        'user_id': user_id,
+                        'message': person_info,
+                        'attachment': attachment,
+                        'random_id': 0}
+                )
+                offset += 1
+                change_user_info(f'https://vk.com/id{user_id}', offset)
+
+            
+
 
 
 
@@ -76,15 +132,15 @@ class VKBot:
                 key_get_person
             )
 
-        # elif keys == "add_favorit":
-        #     key_get_person = VkKeyboard()
-        #
-        #     key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
-        #     self.write_some_msg(
-        #         event.user_id,
-        #         "Поехали!!!",
-        #         key_get_person
-        #     )
+        elif keys == "add_favorit":
+            key_get_person = VkKeyboard()
+
+            key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
+            self.write_some_msg(
+                event.user_id,
+                "Поехали!!!",
+                key_get_person
+            )
 
     def run(self):
         for event in self.listen:
@@ -96,15 +152,18 @@ class VKBot:
                         self.create_keybord(event, "find_person")
 
                     elif request == "найти пару":
-                        self.write_some_msg(
-                            event.user_id,
-                            "Код еще не дописан)))"
-                        )
+                        self.pair_up(event.user_id)
+
+
+                        # self.write_some_msg(
+                        #     event.user_id,
+                        #     "Код еще не дописан)))"
+                        # )
 
                     else:
                         # self.create_keybord(event, 'start')
-                        self.save_profile_info(event.user_id)
-                        # self.pair_up()
+                        # self.save_profile_info(event.user_id)
+                        self.pair_up(event.user_id)
 
 
 
