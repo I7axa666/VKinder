@@ -7,7 +7,6 @@
 - Николай Золотухин
 
 
-
 Этот проект написан в рамках курса "Python разработчик с нуля" ООО "Нетологии"
 
 <img src="https://www.animatedimages.org/data/media/562/animated-line-image-0184.gif" width="1920" />
