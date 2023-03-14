@@ -6,7 +6,7 @@
 - Илья Карьялайнен
 - Николай Золотухин
 
-![GitHub Contributors Image](https://contrib.rocks/image?repo=I7axa666/VKinder)
+
 
 Этот проект написан в рамках курса "Python разработчик с нуля" ООО "Нетологии"
 
