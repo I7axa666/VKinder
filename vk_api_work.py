@@ -3,8 +3,6 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from db_for_vkinder import get_data, add_user, get_user_info, change_user_info, add_favorite, add_black_list, show_favorites
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
-
-
 class VKBot:
     def __init__(self):
         self.vk = vk_api.VkApi(token=get_data()[3])
@@ -138,7 +136,7 @@ class VKBot:
                 key_get_person
             )
 
-        elif keys == "add_favorit":
+        elif keys == "add_favorite":
             key_find_person = VkKeyboard()
             buttons = ['Блэк лист', 'Избранные', 'Показ фаворитов']
             button_color = [VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY, VkKeyboardColor.PRIMARY]
@@ -159,7 +157,7 @@ class VKBot:
                         self.create_keybord(event, "find_person")
 
                     elif request == "найти пару":
-                        self.create_keybord(event, "add_favorit")
+                        self.create_keybord(event, "add_favorite")
 
                     elif request == "избранные":
                         # добавить проверку на наличие данных в person_dict
