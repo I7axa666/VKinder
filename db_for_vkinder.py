@@ -46,7 +46,6 @@ class Favorit(Base):
     name = sq.Column(sq.String(length=40), nullable=False)
     surname = sq.Column(sq.String(length=40), nullable=False)
     link = sq.Column(sq.Text, unique=True, nullable=False)
-    photo = sq.Column(sq.Text, unique=True, nullable=False)
     user = relationship(User, backref="favorites")
 
 
@@ -91,13 +90,13 @@ def get_user_info(user_id, engine=engine):
         sex = 2
     elif user_data.sex == 2:
         sex = 1
-
+    db_user_id = user_data.id
     city_id = user_data.city_id
     offset = user_data.offset
     birth_year = user_data.birth_year
 
     session.close()
-    return sex, city_id, birth_year, offset
+    return sex, city_id, birth_year, offset, db_user_id
 
 
 def change_user_info(user_id, offset, engine=engine):
@@ -107,14 +106,55 @@ def change_user_info(user_id, offset, engine=engine):
     user_data.offset = offset
     session.commit()
 
-def add_favorite(user_id, engine=engine):
-    pass
+def add_favorite(person_dict, engine=engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-def add_black_list(user_id, engine=engine):
-    pass
+    check_user = session.query(Favorit).filter(Favorit.link == person_dict['link'])
+    if session.query(check_user.exists()).scalar() == False:
+        favorit = Favorit(
+            user_id=person_dict['user_id'],
+            name=person_dict['name'],
+            surname=person_dict['surname'],
+            link=person_dict['link']
+        )
+
+        session.add(favorit)
+        session.commit()
+
+    session.close()
+
+def add_black_list(person_dict, engine=engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    check_user = session.query(Black_list).filter(Black_list.vk_id == person_dict['link'])
+    if session.query(check_user.exists()).scalar() == False:
+        black_list = Black_list(
+            user_id=person_dict['user_id'],
+            vk_id=person_dict['link']
+        )
+
+        session.add(black_list)
+        session.commit()
+
+    session.close()
 
 
+def show_favorites(user_id, engine=engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
+    persons = {}
+    user_favorites = session.query(User).join(Favorit.user).filter(User.link == user_id).all()
+    for person in user_favorites[0].favorites:
+        persons[f'{person.name} {person.surname}'] = person.link
+
+    offset = user_favorites[0].offset - 1
+    change_user_info(user_id, offset)
+
+    session.close()
+    return persons
 
 
 
@@ -123,4 +163,4 @@ if __name__ == '__main__':
     # create_tables(engine)
     # add_user('Павел', 'https://vk.com/559261802')
     # print(get_user_info('https://vk.com/id559261802'))
-    change_user_info('https://vk.com/id559261802', 5)
+    show_favorites('https://vk.com/id559261802')

@@ -1,9 +1,7 @@
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from db_for_vkinder import get_data, add_user, get_user_info, change_user_info, add_favorite, add_black_list
+from db_for_vkinder import get_data, add_user, get_user_info, change_user_info, add_favorite, add_black_list, show_favorites
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from func_for_vk import get_person_info
-
 
 
 
@@ -12,7 +10,8 @@ class VKBot:
         self.vk = vk_api.VkApi(token=get_data()[3])
         self.long_pool = VkLongPoll(self.vk)
         self.listen = self.long_pool.listen()
-        self.id_person = ''
+        self.person_dict = {}
+
 
     def write_some_msg(self, user_id, some_msg, keyboard=None):
         post = {
@@ -60,6 +59,7 @@ class VKBot:
         city_id = user_info[1]
         birth_year = user_info[2]
         offset = user_info[3]
+        db_user_id = user_info[4]
         session = vk_api.VkApi(token=get_data()[4])
         while True:
             persons = session.method('users.search', {'sex': sex, 'birth_year': birth_year, 'has_photo': 1, 'city': city_id, 'offset': offset, 'count': 1, 'v': '5.131'})
@@ -92,23 +92,29 @@ class VKBot:
 
                 attachment = attachment[:-1]
 
-
-                person_info = f"{persons['items'][0]['first_name']} {persons['items'][0]['last_name']}\nhttps://vk.com/id{owner_id}"
-
-                self.vk.method(
-                    'messages.send',
-                    {
-                        'user_id': user_id,
-                        'message': person_info,
-                        'attachment': attachment,
-                        'random_id': 0
-                    }
-                )
-                offset += 1
-                change_user_info(f'https://vk.com/id{user_id}', offset)
+                self.person_dict['user_id'] = db_user_id
+                self.person_dict['name'] = persons['items'][0]['first_name']
+                self.person_dict['surname'] = persons['items'][0]['last_name']
+                self.person_dict['link'] = f'https://vk.com/id{owner_id}'
+                self.person_dict['owner_id'] = owner_id
                 break
+
+
+        person_info = f"{self.person_dict['name']} {self.person_dict['surname']}\n{self.person_dict['link']}"
+
+        self.vk.method(
+            'messages.send',
+            {
+                'user_id': user_id,
+                'message': person_info,
+                'attachment': attachment,
+                'random_id': 0
+            }
+        )
+        offset += 1
+        change_user_info(f'https://vk.com/id{user_id}', offset)
+
         self.write_some_msg(user_id, "Добавляем в Блэк-лист или в Избранное?", keyboard)
-        self.id_person = owner_id
 
 
     def create_keybord(self, event, keys):
@@ -123,7 +129,7 @@ class VKBot:
             )
 
         elif keys == "find_person":
-            key_get_person = VkKeyboard(one_time=True)
+            key_get_person = VkKeyboard()
 
             key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
             self.write_some_msg(
@@ -134,8 +140,8 @@ class VKBot:
 
         elif keys == "add_favorit":
             key_find_person = VkKeyboard()
-            buttons = ['Блэк лист', 'Избранные']
-            button_color = [VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY]
+            buttons = ['Блэк лист', 'Избранные', 'Показ фаворитов']
+            button_color = [VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY, VkKeyboardColor.PRIMARY]
             for btn, btn_color in zip(buttons, button_color):
                 key_find_person.add_button(btn, btn_color)
 
@@ -156,10 +162,24 @@ class VKBot:
                         self.create_keybord(event, "add_favorit")
 
                     elif request == "избранные":
-                        add_favorite(self.id_person)
+                        # добавить проверку на наличие данных в person_dict
+                        add_favorite(self.person_dict)
+                        self.person_dict.clear()
+                        self.create_keybord(event, "add_favorit")
 
                     elif request == "блэк лист":
-                        add_black_list(self.id_person)
+                        add_black_list(self.person_dict)
+                        self.person_dict.clear()
+                        self.create_keybord(event, "add_favorit")
+
+                    elif request == "показ фаворитов":
+                        self.person_dict.clear()
+                        persons = show_favorites(f'https://vk.com/id{event.user_id}')
+                        message = '\n'.join('{} {}'.format(key, val) for key, val in persons.items())
+                        self.write_some_msg(event.user_id, message)
+                        self.create_keybord(event, "find_person")
+
+
 
                     else:
                         self.create_keybord(event, 'start')
