@@ -127,6 +127,7 @@ class VKBot:
                 "Приветствую тебя в чат-боте VKinder! Он поможет тебе найти кого-нибудь)) Начнем?",
                 key_start
             )
+            self.save_profile_info(event.user_id)
 
         elif keys == "find_person":
             key_get_person = VkKeyboard()
@@ -134,7 +135,7 @@ class VKBot:
             key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
             self.write_some_msg(
                 event.user_id,
-                "Поехали!!!",
+                "Поехали?!",
                 key_get_person
             )
 
@@ -162,15 +163,20 @@ class VKBot:
                         self.create_keybord(event, "add_favorite")
 
                     elif request == "избранные":
-                        # добавить проверку на наличие данных в person_dict
-                        add_favorite(self.person_dict)
-                        self.person_dict.clear()
-                        self.pair_up(event.user_id, self.key_find_person)
+                        if not self.person_dict:
+                            self.create_keybord(event, "add_favorite")
+                        else:
+                            add_favorite(self.person_dict)
+                            self.person_dict.clear()
+                            self.pair_up(event.user_id, self.key_find_person)
 
                     elif request == "блэк лист":
-                        add_black_list(self.person_dict)
-                        self.person_dict.clear()
-                        self.pair_up(event.user_id, self.key_find_person)
+                        if not self.person_dict:
+                            self.create_keybord(event, "add_favorite")
+                        else:
+                            add_black_list(self.person_dict)
+                            self.person_dict.clear()
+                            self.pair_up(event.user_id, self.key_find_person)
 
                     elif request == "показ фаворитов":
                         self.person_dict.clear()
@@ -180,18 +186,9 @@ class VKBot:
                         self.create_keybord(event, "find_person")
 
 
-
                     else:
                         self.create_keybord(event, 'start')
-                        # self.save_profile_info(event.user_id)
-                        # self.pair_up(event.user_id)
 
-
-
-                    # elif request == "фото":
-                    #     self.send_photo(event.user_id, "")
-                    # elif request == "данные":
-                    #     self.send_profile_info(event.user_id)
 
 
 if __name__ == "__main__":
