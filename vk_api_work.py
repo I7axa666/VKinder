@@ -191,6 +191,3 @@ class VKBot:
 
 
 
-if __name__ == "__main__":
-    bot = VKBot()
-    bot.run()
