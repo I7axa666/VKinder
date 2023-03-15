@@ -95,24 +95,26 @@ class VKBot:
                 self.person_dict['surname'] = persons['items'][0]['last_name']
                 self.person_dict['link'] = f'https://vk.com/id{owner_id}'
                 self.person_dict['owner_id'] = owner_id
+
+
+
+                person_info = f"{self.person_dict['name']} {self.person_dict['surname']}\n{self.person_dict['link']}"
+
+                self.vk.method(
+                    'messages.send',
+                    {
+                        'user_id': user_id,
+                        'message': person_info,
+                        'attachment': attachment,
+                        'random_id': 0
+                    }
+                )
+                offset += 1
+                change_user_info(f'https://vk.com/id{user_id}', offset)
                 break
 
-
-        person_info = f"{self.person_dict['name']} {self.person_dict['surname']}\n{self.person_dict['link']}"
-
-        self.vk.method(
-            'messages.send',
-            {
-                'user_id': user_id,
-                'message': person_info,
-                'attachment': attachment,
-                'random_id': 0
-            }
-        )
-        offset += 1
-        change_user_info(f'https://vk.com/id{user_id}', offset)
-
         self.write_some_msg(user_id, "Добавляем в Блэк-лист или в Избранное?", keyboard)
+
 
 
     def create_keybord(self, event, keys):
@@ -137,13 +139,13 @@ class VKBot:
             )
 
         elif keys == "add_favorite":
-            key_find_person = VkKeyboard()
+            self.key_find_person = VkKeyboard()
             buttons = ['Блэк лист', 'Избранные', 'Показ фаворитов']
             button_color = [VkKeyboardColor.NEGATIVE, VkKeyboardColor.PRIMARY, VkKeyboardColor.PRIMARY]
             for btn, btn_color in zip(buttons, button_color):
-                key_find_person.add_button(btn, btn_color)
+                self.key_find_person.add_button(btn, btn_color)
 
-            self.pair_up(event.user_id, key_find_person)
+            self.pair_up(event.user_id, self.key_find_person)
 
 
 
@@ -163,12 +165,12 @@ class VKBot:
                         # добавить проверку на наличие данных в person_dict
                         add_favorite(self.person_dict)
                         self.person_dict.clear()
-                        self.create_keybord(event, "add_favorit")
+                        self.pair_up(event.user_id, self.key_find_person)
 
                     elif request == "блэк лист":
                         add_black_list(self.person_dict)
                         self.person_dict.clear()
-                        self.create_keybord(event, "add_favorit")
+                        self.pair_up(event.user_id, self.key_find_person)
 
                     elif request == "показ фаворитов":
                         self.person_dict.clear()
