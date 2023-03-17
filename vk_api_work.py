@@ -62,14 +62,27 @@ class VKBot:
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                     return int(event.text.replace(" ", ""))
 
+    def get_city(self, user_id):
+        info = self.vk.method(
+            "users.get", {"user_ids": user_id, "fields": "city"}
+        )
+        try:
+            return info[0]["city"]["id"]
+        except:
+            self.write_some_msg(user_id, "В каком городе вы находитесь?")
+            for event in self.listen:
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                    return event.text.replace(" ", "")
+
     def save_profile_info(self, user_id, event):
         info = self.vk.method(
-            "users.get", {"user_ids": user_id, "fields": "bdate, sex, city"}
+            "users.get", {"user_ids": user_id, "fields": "sex"}
         )
+        print(info[0])
         first_name = info[0]["first_name"]
         bdate = self.get_year(user_id)
-        sex = info[0]["city"]["id"]
-        city = info[0]["city"]["id"]
+        sex = info[0]["sex"]
+        city = self.get_city(user_id)
         link = f"https://vk.com/id{user_id}"
         add_user(first_name, sex, city, bdate, link)
 
