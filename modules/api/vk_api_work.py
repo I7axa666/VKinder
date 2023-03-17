@@ -3,7 +3,7 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
-from db_for_vkinder import (
+from modules.db.db_for_vkinder import (
     get_data,
     add_user,
     get_user_info,
