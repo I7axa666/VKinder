@@ -1,5 +1,8 @@
 import vk_api
+
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+
 from db_for_vkinder import (
     get_data,
     add_user,
@@ -9,7 +12,6 @@ from db_for_vkinder import (
     add_black_list,
     show_favorites,
 )
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
 class VKBot:
@@ -48,13 +50,25 @@ class VKBot:
             "messages.send", {"user_id": user_id, "message": user_info, "random_id": 0}
         )
 
-    def save_profile_info(self, user_id):
+    def get_year(self, user_id):
+        info = self.vk.method(
+            "users.get", {"user_ids": user_id, "fields": "bdate"}
+        )
+        try:
+            return info[0]["bdate"].split(".")[2]
+        except:
+            self.write_some_msg(user_id, "Напиши свой год рождения, например: 1997")
+            for event in self.listen:
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                    return int(event.text.replace(" ", ""))
+
+    def save_profile_info(self, user_id, event):
         info = self.vk.method(
             "users.get", {"user_ids": user_id, "fields": "bdate, sex, city"}
         )
         first_name = info[0]["first_name"]
-        bdate = int(info[0]["bdate"].split(".")[2])
-        sex = info[0]["sex"]
+        bdate = self.get_year(user_id)
+        sex = info[0]["city"]["id"]
         city = info[0]["city"]["id"]
         link = f"https://vk.com/id{user_id}"
         add_user(first_name, sex, city, bdate, link)
@@ -144,19 +158,17 @@ class VKBot:
             key_start = VkKeyboard(one_time=True)
 
             key_start.add_button("START", VkKeyboardColor.PRIMARY)
+            self.save_profile_info(event.user_id, event=event)
             self.write_some_msg(
                 event.user_id,
                 "Приветствую тебя в чат-боте VKinder! Он поможет тебе найти кого-нибудь)) Начнем?",
                 key_start,
             )
-            self.save_profile_info(event.user_id)
-
         elif keys == "find_person":
             key_get_person = VkKeyboard()
 
             key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
             self.write_some_msg(event.user_id, "Поехали?!", key_get_person)
-
         elif keys == "add_favorite":
             self.key_find_person = VkKeyboard()
             buttons = ["Блэк лист", "Избранные", "Показ фаворитов"]
