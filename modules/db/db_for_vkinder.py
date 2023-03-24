@@ -148,5 +148,6 @@ def show_favorites(user_id, engine=engine):
 
 
 if __name__ == "__main__":
-#     drop_tables(engine)
+    drop_tables(engine)
     create_tables(engine)
+    # get_user_info('https://vk.com/id559261802')

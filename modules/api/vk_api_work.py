@@ -169,7 +169,10 @@ class VKBot:
     def create_keybord(self, event, keys):
         if keys == "start":
             key_start = VkKeyboard(one_time=True)
-
+            try:
+                self.user_info = get_user_info(f"https://vk.com/id{event.user_id}")
+            except:
+                self.save_profile_info(event.user_id, event=event)
             key_start.add_button("START", VkKeyboardColor.PRIMARY)
             self.save_profile_info(event.user_id, event=event)
             self.write_some_msg(
@@ -178,11 +181,21 @@ class VKBot:
                 key_start,
             )
         elif keys == "find_person":
+            try:
+                self.user_info = get_user_info(f"https://vk.com/id{event.user_id}")
+            except:
+                self.save_profile_info(event.user_id, event=event)
             key_get_person = VkKeyboard()
 
             key_get_person.add_button("Найти пару", VkKeyboardColor.PRIMARY)
             self.write_some_msg(event.user_id, "Поехали?!", key_get_person)
         elif keys == "add_favorite":
+
+            try:
+                self.user_info = get_user_info(f"https://vk.com/id{event.user_id}")
+            except:
+                self.save_profile_info(event.user_id, event=event)
+
             self.key_find_person = VkKeyboard()
             buttons = ["Блэк лист", "Избранные", "Показ фаворитов"]
             button_color = [
